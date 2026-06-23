@@ -1,66 +1,73 @@
-const fetchButton = document.getElementById("fetchButton");
-const submitPost = document.getElementById("postForm")
-const successPost = document.getElementById("formSuccess")
+const fetchBtn = document.getElementById("fetchButton");
+const deleteBtn = document.getElementById("deleteButton");
+const submitPost = document.getElementById("postForm");
+const successPost = document.getElementById("formSuccess");
 
-submitPost.addEventListener("submit", function (event) {
+async function handleSubmit(event) {
     event.preventDefault();
-    console.log(event);
     const elements = event.target.elements;
     const title = elements.title.value;
     const body = elements.body.value;
-    console.log(title, body);
     const jsonObj = {
         "title": title,
         "body": body
     }
-    fetch("https://jsonplaceholder.typicode.com/posts", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-            },
-        body: JSON.stringify(jsonObj)
-        })
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (data){
-            console.log(data);
-            alert(`Post submitted Successfully!
-                ${data.title}
-                ${data.body}`);
-        })
     
-})
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+                },
+            body: JSON.stringify(jsonObj)
+        });
 
-fetchButton.addEventListener("click", function () {
-   // Make the GET request   
+        const data = await response.json();
+        alert(`Post submitted Successfully!
+            ${data.title}
+            ${data.body}`);
+    } catch(err) {
+        console.error(`${err.message}\nUnable to post data`);
+    }
+}
 
+async function handleClick() {
+    // Make the GET request   
 
-fetch("https://jsonplaceholder.typicode.com/posts")
-       .then(function (response) {
-           // Convert the response to JSON
-           return response.json();
-        })
-       .then(function (json) {
-        //    console.log(json); // Log the JSON data
-           const div = document.getElementById("postList");
-
-           for(let user of json) {
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+        const data = await response.json();
+        const div = document.getElementById("postList");
+        for (let post of data) {
             const postContainer = document.createElement("div")
             postContainer.innerHTML = 
                 `
-                <p>Title: ${user.title}</p>
-                <p>Message: ${user.body}</p>
+                <p>Title: ${post.title}</p>
+                <p>Message: ${post.body}</p>
                 <br>
                 `;
             div.appendChild(postContainer);
-           }
-            ;
-        })
+        }
+    } catch(err) {
+        console.error(`${err.message}\nUnable to pull data`)
+    }
+}
 
-       .catch(function (error) {
-           console.error("Error fetching the data:", error);
-       });
+async function handleDelete() {
 
-});
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts/1", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        if (response.status === 200) alert("Delete successful!");
+    } catch(err) {
+        console.error(`${err.message}: Data could not be deleted`);
+    }
+}
 
+submitPost.addEventListener("submit", handleSubmit);
+fetchBtn.addEventListener("click", handleClick);
+deleteBtn.addEventListener("click", handleDelete);
